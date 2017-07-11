@@ -5,8 +5,18 @@ namespace report
 {
     class AssemblyReport
     {
+        public static void Usage()
+        {
+            Environment.Exit(1);
+        }
+
         static void Main(string[] args)
         {
+            if (args.Length == 0)
+            {
+                Usage();
+            }
+
             var filename = args[0];
 
             try

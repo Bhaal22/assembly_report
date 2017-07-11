@@ -15,6 +15,10 @@ namespace report
                 var references = loadedAssembly.GetReferencedAssemblies();
 
                 Console.WriteLine($"Success {filename}");
+
+                var assemblyInfo = loadedAssembly.GetName();
+                Console.WriteLine($"platform: {assemblyInfo.ProcessorArchitecture}");
+
                 foreach (var reference in references)
                 {
                     Console.WriteLine($"{reference.Name} {reference.Version}");

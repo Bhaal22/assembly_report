@@ -1,4 +1,5 @@
 ﻿using System;
+using System.IO;
 using System.Reflection;
 
 namespace report
@@ -18,22 +19,24 @@ namespace report
             }
 
             var filename = args[0];
+            var file = new FileInfo(filename);
 
             try
             {
-                var loadedAssembly = Assembly.LoadFile($@"{filename}");
+                var loadedAssembly = Assembly.LoadFile($@"{file.FullName}");
                 var references = loadedAssembly.GetReferencedAssemblies();
 
-                Console.WriteLine($"Success {filename}");
 
                 var assemblyInfo = loadedAssembly.GetName();
-                Console.WriteLine($"platform: {assemblyInfo.ProcessorArchitecture}");
+
+                Console.WriteLine("Name\tProc. Archi.\tVersion");
+                Console.WriteLine($"{file.Name}\t{assemblyInfo.ProcessorArchitecture}\t{assemblyInfo.Version}");
 
                 foreach (var reference in references)
                 {
+                    Console.Write("  |---");
                     Console.WriteLine($"{reference.Name} {reference.Version}");
                 }
-                Console.WriteLine($"Done {filename}");
             }
             catch(Exception ex)
             {

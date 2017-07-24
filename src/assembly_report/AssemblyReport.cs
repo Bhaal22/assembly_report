@@ -8,6 +8,7 @@ namespace report
     {
         public static void Usage()
         {
+            Console.WriteLine("Usage: specify flename to dissect dependencies");
             Environment.Exit(1);
         }
 

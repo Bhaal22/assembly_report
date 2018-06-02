@@ -5,7 +5,7 @@ using System.Reflection;
 namespace report
 {
     class AssemblyReport
-    {
+    { 
         public static void Usage()
         {
             Console.WriteLine("Usage: specify flename to dissect dependencies");
@@ -25,8 +25,9 @@ namespace report
             try
             {
                 var loadedAssembly = Assembly.LoadFile($@"{file.FullName}");
-                var references = loadedAssembly.GetReferencedAssemblies();
+                var references = AssemblyReporter.GetReferences(loadedAssembly);
 
+                var plop = AssemblyReporter.GetVersion(loadedAssembly);
 
                 var assemblyInfo = loadedAssembly.GetName();
 

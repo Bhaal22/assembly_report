@@ -1,5 +1,8 @@
-﻿using System;
+﻿using asssembly_report;
+using System;
+using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Reflection;
 
 namespace report
@@ -14,36 +17,74 @@ namespace report
 
         static void Main(string[] args)
         {
-            if (args.Length == 0)
+            var checkReferences = false;
+            if (args.Length < 2)
             {
                 Usage();
             }
 
-            var filename = args[0];
-            var file = new FileInfo(filename);
+            var exclude = string.Empty;
+            if (args.Length == 3)
+                exclude = args[2];
 
-            try
+            var filename__ = args[0];
+
+            var filenames = new List<string>();
+            var excludeFileNames = new List<string>();
+
+            if (File.Exists(filename__))
             {
-                var loadedAssembly = Assembly.LoadFile($@"{file.FullName}");
-                var references = AssemblyReporter.GetReferences(loadedAssembly);
+                filenames.Add(filename__);
+            }
+            else
+            {
+                filenames.AddRange(Directory.GetFiles(".", filename__));
+                excludeFileNames.AddRange(Directory.GetFiles(".", exclude));
 
-                var plop = AssemblyReporter.GetVersion(loadedAssembly);
+                filenames = filenames.Except(excludeFileNames).ToList();
+            }
 
-                var assemblyInfo = loadedAssembly.GetName();
+            var assemblyDetails = new List<AssemblyDetail>();
 
-                Console.WriteLine("Name\tProc. Archi.\tVersion");
-                Console.WriteLine($"{file.Name}\t{assemblyInfo.ProcessorArchitecture}\t{assemblyInfo.Version}");
-
-                foreach (var reference in references)
+            foreach (var filename in filenames)
+            {
+                var file = new FileInfo(filename);
+                Console.WriteLine($"Processing ... {filename}");
+                try
                 {
-                    Console.Write("  |---");
-                    Console.WriteLine($"{reference.Name} {reference.Version}");
+                    var loadedAssembly = Assembly.LoadFile($@"{file.FullName}");
+                    var references = AssemblyReporter.GetReferences(loadedAssembly);
+
+                    var assemblyName = loadedAssembly.GetName();
+
+                    var assemblyDetail = new AssemblyDetail()
+                    {
+                        Name = file.Name,
+                        Version = assemblyName.Version.ToString(),
+                        Platform = assemblyName.ProcessorArchitecture.ToString()
+                    };
+
+                    assemblyDetails.Add(assemblyDetail);
+
+                    if (checkReferences)
+                    {
+                        foreach (var reference in references)
+                        {
+                            Console.Write("  |---");
+                            Console.WriteLine($"{reference.Name} {reference.Version}");
+                        }
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine($"Fail {filename}: {ex.Message}");
                 }
             }
-            catch(Exception ex)
-            {
-                Console.WriteLine($"Fail {filename}: {ex.Message}");
-            }
+
+            var json = Newtonsoft.Json.JsonConvert.SerializeObject(assemblyDetails);
+
+            File.WriteAllText(args[1], json);
+
         }
     }
 }
